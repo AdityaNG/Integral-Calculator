@@ -1,7 +1,7 @@
 /*
  * Calculator.c
  *
- * Run with gcc calculator.c `pkg-config gtk+-2.0 --cflags pkg-config gtk+-2.0 --libs` ; ./a.out
+ * Example showing different widgets in use.
  *
 */
 
@@ -87,6 +87,79 @@ gint CloseAppWindow (GtkWidget *widget, gpointer data)
 
 
 /*
+ * TrimTrailingZeros
+ *
+ * Get rid of trailing zeros 
+ * Takes the string and removes the trailing zeros.
+*/
+void TrimTrailingZeros (char *szDigits)
+{
+    int nIndex;
+    int bDecimal = FALSE;
+    int nPos = -1;
+
+    /* --- Loop through the string. --- */
+    for (nIndex = 0; nIndex < strlen (szDigits); nIndex++) {
+
+        /* --- Is this a decimal? --- */
+        if (szDigits[nIndex] == '.') {
+             bDecimal = TRUE;
+        }
+
+        /* --- If we're on the right side of the decimal... --- */
+        if (bDecimal) {
+
+            /* --- A zero?  Hmm... from this point on? --- */
+            if (szDigits[nIndex] == '0') {
+
+               /* --- If we don't have a point yet... --- */
+               if (nPos < 0) {
+ 
+                   /* --- Save this as a point. --- */
+                   nPos = nIndex;
+               }
+            } else {
+
+               /* --- Clear it.  Bad point. --- */
+               nPos = -1;
+            }
+        }
+    }
+
+    /* --- Truncate the field. --- */
+    if (nPos > 0) {
+        szDigits[nPos] = (char) 0;
+    }
+}
+
+
+/*
+ * TrimLeadingZeros
+ *
+ * Trim the leading zeros.
+ * 
+ * Converts numbers like "0000012" to "12"
+*/
+void TrimLeadingZeros (char *szDigits)
+{
+    int nPos;
+
+    if (szDigits == NULL) return;
+
+    /* --- While we have a combination a digit in front --- */
+    for (nPos = 0; (szDigits[nPos] && szDigits[nPos] == '0'); nPos++) {
+
+        /* --- If the digit is a zero and next char is a digit --- */
+        if (isdigit (szDigits[nPos+1])) {
+
+            /* --- Blank the field. --- */  
+            szDigits[nPos] = ' ';
+        } 
+    }
+}
+
+
+/*
  * Command
  *
  * Returns true if the character is a two digit command.
@@ -168,13 +241,10 @@ void HandleDigit (char *str, char ch)
     /*
     
     if (Command (lastChar)) {
-
     
         gtk_label_set (GTK_LABEL (label), "");
-
     
         if (lastChar == '=') {
-
     
             lastChar = (char) 0;
             prevCmd = (char) 0;
@@ -192,7 +262,7 @@ void HandleDigit (char *str, char ch)
     buffer[len+1] = (gchar) 0;
    
     /* --- Trim leading zeros. --- */
-    //TrimLeadingZeros (buffer);
+    TrimLeadingZeros (buffer);
 
     /* --- Add digit to field. --- */
     gtk_label_set (GTK_LABEL (label), (char *) buffer);
@@ -243,8 +313,8 @@ void MaybeUnaryOperation (char *str)
 
     /* --- Put the number back. --- */
     sprintf (buffer, "%f", (float) num2);
-    //TrimTrailingZeros (buffer);
-    //TrimLeadingZeros (buffer);
+    TrimTrailingZeros (buffer);
+    TrimLeadingZeros (buffer);
     gtk_label_set (GTK_LABEL (label), buffer);
 }
 
