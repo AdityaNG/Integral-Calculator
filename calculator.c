@@ -1,7 +1,11 @@
 /*
  * Calculator.c
  *
+<<<<<<< HEAD
+ * Run with gcc calculator.c `pkg-config gtk+-2.0 --cflags pkg-config gtk+-2.0 --libs` ; ./a.out
+=======
  * Example showing different widgets in use.
+>>>>>>> 6d3144bcc312aec9e69472a11a9fcdceca38f236
  *
 */
 
@@ -87,6 +91,8 @@ gint CloseAppWindow (GtkWidget *widget, gpointer data)
 
 
 /*
+<<<<<<< HEAD
+=======
  * TrimTrailingZeros
  *
  * Get rid of trailing zeros 
@@ -160,6 +166,7 @@ void TrimLeadingZeros (char *szDigits)
 
 
 /*
+>>>>>>> 6d3144bcc312aec9e69472a11a9fcdceca38f236
  * Command
  *
  * Returns true if the character is a two digit command.
@@ -241,10 +248,13 @@ void HandleDigit (char *str, char ch)
     /*
     
     if (Command (lastChar)) {
+
     
         gtk_label_set (GTK_LABEL (label), "");
+
     
         if (lastChar == '=') {
+
     
             lastChar = (char) 0;
             prevCmd = (char) 0;
@@ -262,7 +272,11 @@ void HandleDigit (char *str, char ch)
     buffer[len+1] = (gchar) 0;
    
     /* --- Trim leading zeros. --- */
+<<<<<<< HEAD
+    //TrimLeadingZeros (buffer);
+=======
     TrimLeadingZeros (buffer);
+>>>>>>> 6d3144bcc312aec9e69472a11a9fcdceca38f236
 
     /* --- Add digit to field. --- */
     gtk_label_set (GTK_LABEL (label), (char *) buffer);
@@ -313,8 +327,13 @@ void MaybeUnaryOperation (char *str)
 
     /* --- Put the number back. --- */
     sprintf (buffer, "%f", (float) num2);
+<<<<<<< HEAD
+    //TrimTrailingZeros (buffer);
+    //TrimLeadingZeros (buffer);
+=======
     TrimTrailingZeros (buffer);
     TrimLeadingZeros (buffer);
+>>>>>>> 6d3144bcc312aec9e69472a11a9fcdceca38f236
     gtk_label_set (GTK_LABEL (label), buffer);
 }
 
