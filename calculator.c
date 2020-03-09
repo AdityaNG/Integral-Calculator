@@ -1,11 +1,6 @@
 /*
  * Calculator.c
- *
-<<<<<<< HEAD
  * Run with gcc calculator.c `pkg-config gtk+-2.0 --cflags pkg-config gtk+-2.0 --libs` ; ./a.out
-=======
- * Example showing different widgets in use.
->>>>>>> 6d3144bcc312aec9e69472a11a9fcdceca38f236
  *
 */
 
