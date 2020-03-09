@@ -84,101 +84,6 @@ gint CloseAppWindow (GtkWidget *widget, gpointer data)
     return (FALSE);
 }
 
-
-/*
-<<<<<<< HEAD
-=======
- * TrimTrailingZeros
- *
- * Get rid of trailing zeros 
- * Takes the string and removes the trailing zeros.
-*/
-void TrimTrailingZeros (char *szDigits)
-{
-    int nIndex;
-    int bDecimal = FALSE;
-    int nPos = -1;
-
-    /* --- Loop through the string. --- */
-    for (nIndex = 0; nIndex < strlen (szDigits); nIndex++) {
-
-        /* --- Is this a decimal? --- */
-        if (szDigits[nIndex] == '.') {
-             bDecimal = TRUE;
-        }
-
-        /* --- If we're on the right side of the decimal... --- */
-        if (bDecimal) {
-
-            /* --- A zero?  Hmm... from this point on? --- */
-            if (szDigits[nIndex] == '0') {
-
-               /* --- If we don't have a point yet... --- */
-               if (nPos < 0) {
- 
-                   /* --- Save this as a point. --- */
-                   nPos = nIndex;
-               }
-            } else {
-
-               /* --- Clear it.  Bad point. --- */
-               nPos = -1;
-            }
-        }
-    }
-
-    /* --- Truncate the field. --- */
-    if (nPos > 0) {
-        szDigits[nPos] = (char) 0;
-    }
-}
-
-
-/*
- * TrimLeadingZeros
- *
- * Trim the leading zeros.
- * 
- * Converts numbers like "0000012" to "12"
-*/
-void TrimLeadingZeros (char *szDigits)
-{
-    int nPos;
-
-    if (szDigits == NULL) return;
-
-    /* --- While we have a combination a digit in front --- */
-    for (nPos = 0; (szDigits[nPos] && szDigits[nPos] == '0'); nPos++) {
-
-        /* --- If the digit is a zero and next char is a digit --- */
-        if (isdigit (szDigits[nPos+1])) {
-
-            /* --- Blank the field. --- */  
-            szDigits[nPos] = ' ';
-        } 
-    }
-}
-
-
-/*
->>>>>>> 6d3144bcc312aec9e69472a11a9fcdceca38f236
- * Command
- *
- * Returns true if the character is a two digit command.
-*/
-int Command (char ch)
-{
-    switch (ch) {
-        case '+':
-        case '-':
-        case '/':
-        case '*':
-        case '=':
-            return (TRUE);
-    }
-    return (FALSE);
-}
-
 /*
  * FloatingPointChar
  *
@@ -265,14 +170,6 @@ void HandleDigit (char *str, char ch)
     len = strlen (buffer);
     buffer[len] = (gchar) ch;
     buffer[len+1] = (gchar) 0;
-   
-    /* --- Trim leading zeros. --- */
-<<<<<<< HEAD
-    //TrimLeadingZeros (buffer);
-=======
-    TrimLeadingZeros (buffer);
->>>>>>> 6d3144bcc312aec9e69472a11a9fcdceca38f236
-
     /* --- Add digit to field. --- */
     gtk_label_set (GTK_LABEL (label), (char *) buffer);
 }
@@ -322,13 +219,6 @@ void MaybeUnaryOperation (char *str)
 
     /* --- Put the number back. --- */
     sprintf (buffer, "%f", (float) num2);
-<<<<<<< HEAD
-    //TrimTrailingZeros (buffer);
-    //TrimLeadingZeros (buffer);
-=======
-    TrimTrailingZeros (buffer);
-    TrimLeadingZeros (buffer);
->>>>>>> 6d3144bcc312aec9e69472a11a9fcdceca38f236
     gtk_label_set (GTK_LABEL (label), buffer);
 }
 
