@@ -1,7 +1,7 @@
 # Integral Calculator
 
 
-![alt text](https://raw.githubusercontent.com/AdityaNG/Integral-Calculator/master/images/1.png "Output")
+![alt text](https://raw.githubusercontent.com/AdityaNG/Integral-Calculator/master/images/3.png "Output")
 
 
 ## Description
@@ -13,24 +13,13 @@ message passing mechanism between the C program and an auxiliary python
 program to plot the graph).
 3. Computing the definite integral of the function between a and b
 ## C-concepts used
-1. Working with GTK 2 library for GUI :
-a. CallbackFunctionasaparameter
-b. Deeper understanding of scope of variables
-c. WorkingwithlargerlibrarieswithoutOOPsconcepts
-d. Benefits and Consequences of declaring variables in Global Scope
+1. Working with GTK 2 library for GUI : Callback Function as a parameter, Deeper understanding of scope of variables, Working with larger libraries without OOPs concepts, Benefits and Consequences of declaring variables in Global Scope
   
- 2. Interfacing with Pyplot through C
-a. RudimentaryNonBlocking(Asynchronous)InterProcess
-Communication using Files
-b. Deeper understanding of File IO with C and Python
-c. WorkingwithimagesinGTK2
-3. Integrating by Implementing Riemann sum
-a. EvaluationofaStringtoaMathexpressionusingexpr.h
-b. Advanced string manipulation
-c. Convertingafloattoastringandviceversa(ftoaandatof)
-d. Optimizing output by polling data once every 100 iterations as opposed
-to every iteration
-e. Accuracymeasureofthealgorithm
+2. Interfacing with Pyplot through C - Rudimentary NonB locking(Asynchronous) Inter Process Communication using Files, Deeper understanding of File IO with C and Python, Working with images in GTK2
+
+3. Integrating by Implementing Riemann sum - Evaluation of a String to a Math expression using expr.h, Advanced string manipulation, Converting a float to a string and vice versa(ftoaandatof), Optimizing output by polling data once every 100 iterations as opposed
+to every iteration, Accuracy measure of the algorithm
+
 ## Learning Outcomes
 ### GUI
 We worked with GTK 2 to implement the GUI. It gave us an idea of how one would work with large frameworks or libraries without the aid of Objects and Classes. It gave us a deeper understanding of using function as a parameter and callbacks in c.
