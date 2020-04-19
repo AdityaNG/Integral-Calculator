@@ -8,381 +8,297 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
+#include "integral.h"
 #include <gtk/gtk.h>
 
-static float num1 = 0;
-static char lastChar = (char) 0;
-static char prevCmd = (char) 0;
-#define BUF_SIZE 88
-
-/*
- * --- data structure to keep track of the calculator buttons.
-*/
-typedef struct {
-
-    char      *szLabel;    /* --- Label display on button --- */
-    int       row;         /* --- Row to place the button --- */
-    int       col;         /* --- Column to place the button --- */
-    GtkWidget *widget;     /* --- Handle to the button --- */
-
-} typCalculatorButton;
-
-
-/* 
- * --- This is the button list.  Each button is documented here so 
- *     we can access it.
-*/
-typCalculatorButton buttonList [] = {
-    {"C",   1, 0, NULL},      /* --- Clear --- */
-    {"x",  1, 1, NULL},       /* --- x --- */
-    {"/",   1, 3, NULL},      /* --- Division --- */
-
-    {"7",   2, 0, NULL},      /* --- Digit --- */
-    {"8",   2, 1, NULL},      /* --- Digit --- */
-    {"9",   2, 2, NULL},      /* --- Digit --- */
-    {"*",   2, 3, NULL},      /* --- Multiplication --- */
-    {"pow",   2, 4, NULL},      /* --- Power --- */
-
-    {"4",   3, 0, NULL},      /* --- Digit --- */
-    {"5",   3, 1, NULL},      /* --- Digit --- */
-    {"6",   3, 2, NULL},      /* --- Digit --- */
-    {"-",   3, 3, NULL},      /* --- Subtraction --- */
-    {" ", 3, 4, NULL},      /* --- 1/x --- */
-
-    {"1",   4, 0, NULL},      /* --- Digit --- */
-    {"2",   4, 1, NULL},      /* --- Digit --- */
-    {"3",   4, 2, NULL},      /* --- Digit --- */
-    {"+",   4, 3, NULL},      /* --- Addition --- */
-    {"sqrt",4, 4, NULL},      /* --- Square root --- */
-
-    {" ", 5, 0, NULL},      /* --- Negate value --- */
-    {"0",   5, 1, NULL},      /* --- zero --- */
-    {".",   5, 2, NULL},      /* --- Decimal --- */
-    {"=",   5, 3, NULL},      /* --- Equals/total --- */
-    {" ", 5, 4, NULL},      /* --- Squared --- */
-};
-
-/*
- * --- Number of buttons in the data structure.  
-*/
-int nButtons = sizeof (buttonList) / 
-               sizeof (typCalculatorButton);
-
-/* --- This is the LCD panel - the results --- */
-GtkWidget *label;
-
-
-/*
- * CloseAppWindow
- *
- * The window is closing down, end the gtk loop
-*/
-gint CloseAppWindow (GtkWidget *widget, gpointer data)
-{
-    gtk_main_quit ();
-
-    return (FALSE);
-}
-
-/*
- * FloatingPointChar
- *
- * Returns true if the character is any of [0123456789.]
-*/
-int FloatingPointChar (char ch)
-{
-
-    return (isdigit (ch) || ch == '.');
-}
-
-
-/*
- * key_press
- *
- * Handle the button "key_press" event.
- *
- * Function looks for the keystroke in the calculator 
- * data structure and (if a match is found) presses the 
- * button that matches the keystroke for the user.  It
- * keeps our code small since we only have to handle the
- * button_clicked events.
-*/
-void key_press (GtkWidget *widget, 
-                GdkEventKey *event, 
-                gpointer data)
-{
-    int nIndex;
-
-    /* --- Search through the buttons --- */
-    for (nIndex = 0; nIndex < nButtons; nIndex++) {
-
-        /* --- If the keystroke is the first character of a button AND --- */
-        /* --- the button label length is one. --- */      
-        if (event->keyval == buttonList[nIndex].szLabel[0] && 
-            buttonList[nIndex].szLabel[1] == (char) 0) {
-
-            /* --- Set focus to that button --- */
-            gtk_widget_grab_focus (buttonList[nIndex].widget);
-
-            /* --- Make like the button was clicked to do processing. --- */
-            gtk_button_clicked (GTK_BUTTON (buttonList[nIndex].widget));
-            return;
-        }
-    }
-}
-
-
-/*
- * HandleDigit
- *
- * Digit button was pressed, deal with it.  How it
- * is dealt with depends on the situation.
-*/
-void HandleDigit (char *str, char ch)
-{
-    char *labelText;
-    char buffer[BUF_SIZE];
-    int  len;
-
-
-    /*
-    
-    if (Command (lastChar)) {
-
-    
-        gtk_label_set (GTK_LABEL (label), "");
-
-    
-        if (lastChar == '=') {
-
-    
-            lastChar = (char) 0;
-            prevCmd = (char) 0;
-        }
-    }
-    */
-
-    /* --- Get the buffer in the led --- */
-    gtk_label_get (GTK_LABEL (label), &labelText);
-    strcpy (buffer, labelText);
-
-    /* --- Add the new character on it. --- */
-    len = strlen (buffer);
-    buffer[len] = (gchar) ch;
-    buffer[len+1] = (gchar) 0;
-    /* --- Add digit to field. --- */
-    gtk_label_set (GTK_LABEL (label), (char *) buffer);
-}
-
-
-/*
- * MaybeUnary
- *
- * str
- * 
- * Check to see if the user hit a unary operator button - 
- * like %, sqrt, 1/x, etc that should be dealt with NOW
- * not later.
-*/
-void MaybeUnaryOperation (char *str)
-{
-    char *labelText;
-    char buffer[BUF_SIZE];
-    float num2;
-
-    /* --- Get number in the field. --- */
-    gtk_label_get (GTK_LABEL (label), &labelText);
-    num2 = atof (labelText);
-
-    /* --- Percentage? --- */
-    if (strcmp (str, "%") == 0) {
-        num2 = num2 / 100;
-
-    /* --- Trying for 1/x? --- */
-    } else if (strcmp (str, "1/x") == 0) {
-
-        /* --- Can't divide by zero. --- */
-        if (num2 == 0) {
-            /*Error (); */
-            return;
-        }
-        num2 = 1 / num2;
-
-    /* --- Calculate sqrt --- */
-    } else if (strcmp (str, "sqrt") == 0) {
-        num2 = sqrt ((double) num2);
-
-    /* --- Calculate square --- */
-    } else if (strcmp (str, "x^2") == 0) {
-        num2 = num2 * num2;
-    }
-
-    /* --- Put the number back. --- */
-    sprintf (buffer, "%f", (float) num2);
-    gtk_label_set (GTK_LABEL (label), buffer);
-}
-
-
-/*
- * button_clicked
- *
- * widget - button pressed.
- * data - button label.
- *
- * Button was pressed, handle it.
-*/
-void button_clicked (GtkWidget *widget, gpointer data)
-{
-    char ch = *((char *) data);
-    char *str;
-    
-    /* --- Get the button label --- */
-    str = (char *) data;
-
-    /* --- Entering a number... --- */
-    if (FloatingPointChar (ch) && strlen (str) == 1) {
-
-        HandleDigit (str, ch);
-
+/**
+ * Custom Double to ASCII converter
+ */
+char * dtoa(char *s, double n) {
+    static double PRECISION = 0.00000000000001;
+    static int MAX_NUMBER_STRING_SIZE = 32;
+    // handle special cases
+    if (isnan(n)) {
+        strcpy(s, "nan");
+    } else if (isinf(n)) {
+        strcpy(s, "inf");
+    } else if (n == 0.0) {
+        strcpy(s, "0");
     } else {
-
-        /* --- Clear? --- */
-        if (strcmp (str, "CE") == 0) {
-            gtk_label_set (GTK_LABEL (label), "0");
-            return;
-
-        /* --- BIG clear? --- */
-        } else if (strcmp (str, "C") == 0) {
-            prevCmd = (char) 0;
-            lastChar = (char) 0;
-            gtk_label_set (GTK_LABEL (label), "0");
-            return;
-
-        } else {
-
-            /* --- Maybe it's a unary operator? --- */
-            MaybeUnaryOperation (str);
+        int digit, m, m1;
+        char *c = s;
+        int neg = (n < 0);
+        if (neg)
+            n = -n;
+        // calculate magnitude
+        m = log10(n);
+        int useExp = (m >= 14 || (neg && m >= 9) || m <= -9);
+        if (neg)
+            *(c++) = '-';
+        // set up for scientific notation
+        if (useExp) {
+            if (m < 0)
+               m -= 1.0;
+            n = n / pow(10.0, m);
+            m1 = m;
+            m = 0;
         }
-
-        /* --- See if there's a binary operation to do --- */
-        //HandleBinaryOperation ();
-
-        prevCmd = ch;
+        if (m < 1.0) {
+            m = 0;
+        }
+        // convert the number
+        while (n > PRECISION || m >= 0) {
+            double weight = pow(10.0, m);
+            if (weight > 0 && !isinf(weight)) {
+                digit = floor(n / weight);
+                n -= (digit * weight);
+                *(c++) = '0' + digit;
+            }
+            if (m == 0 && n > 0)
+                *(c++) = '.';
+            m--;
+        }
+        if (useExp) {
+            // convert the exponent
+            int i, j;
+            *(c++) = 'e';
+            if (m1 > 0) {
+                *(c++) = '+';
+            } else {
+                *(c++) = '-';
+                m1 = -m1;
+            }
+            m = 0;
+            while (m1 > 0) {
+                *(c++) = '0' + m1 % 10;
+                m1 /= 10;
+                m++;
+            }
+            c -= m;
+            for (i = 0, j = m-1; i<j; i++, j--) {
+                // swap without temporary
+                c[i] ^= c[j];
+                c[j] ^= c[i];
+                c[i] ^= c[j];
+            }
+            c += m;
+        }
+        *(c) = '\0';
     }
-    lastChar = ch;
+    return s;
 }
 
 /*
- * CreateButton
- *
- * Create a button, assign event handlers, and attach the button to the
- * table in the proper place.
+ * UI elements delcaration  
 */
-GtkWidget *CreateButton (GtkWidget *table, char *szLabel, int row, int column)
-{
-    GtkWidget *button;
-
-    /* --- Create the button --- */
-    button = gtk_button_new_with_label (szLabel);
-
-    /* --- We care if the button is clicked --- */
-    gtk_signal_connect (GTK_OBJECT (button), "clicked",
-                        GTK_SIGNAL_FUNC (button_clicked), szLabel);
-
-    /* --- Put the button in the table in the right place. --- */
-    gtk_table_attach (GTK_TABLE (table), button, 
-                      column, column+1, 
-                      row, row + 1, 
-                      GTK_FILL | GTK_EXPAND, 
-                      GTK_FILL | GTK_EXPAND, 
-                      5, 5);
-
-    /* --- Make the button visible --- */
-    gtk_widget_show (button);
-
-    /* --- return the button. --- */
-    return (button);
-}
-
-
-
-/*
- * CreateCalculatorButtons
- *
- * Create the buttons on the calculator from the table we defined at the
- * beginning of this program.  The button pointers (handles) are stored
- * back in the table so they can be referenced later.
-*/
-void CreateCalculatorButtons (GtkWidget *table)
-{
-    int nIndex;
-
-    /* --- Run through the list of buttons. --- */
-    for (nIndex = 0; nIndex < nButtons; nIndex++) {
-
-        /* --- Create a button --- */
-        buttonList[nIndex].widget = 
-                CreateButton (table, 
-                              buttonList[nIndex].szLabel, 
-                              buttonList[nIndex].row, 
-                              buttonList[nIndex].col);
-    }
-}
-
-/*
- * main
- *
- * Program begins here
-*/
-int main (int argc, char *argv[])
-{
     GtkWidget *window;
+    GtkWidget *button;
+    GtkWidget *integral_w_l;
+    GtkWidget *running_from_l;
+    GtkWidget *a_l;
+    GtkWidget *b_l;
+    GtkWidget *result_l;
+
+    GtkWidget *integral_w;
+    GtkWidget *a;
+    GtkWidget *b;
+    GtkWidget *result_w;
+
+    GtkWidget *box1;
     GtkWidget *table;
 
-    /* --- GTK initialization --- */
-    gtk_init (&argc, &argv);
+    GtkWidget *image;
+ 
+/**
+ * Genrates graph by passing params to plotter.py
+ */
+void generate_graph(float a, float b, char* e) {
+    
+    FILE * fptr = fopen ("cache/points.txt","w"); 
 
-    /* --- Create the calculator window --- */
-    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    float N = 100;
+    for (int i=0; i<N; i++) {
+        float x = (b-a)*i/N + a;
+        float y = parseAt(e, x);
+        
+        fprintf(fptr, "%f %f\n", x, y);
+        //fputs(line, fptr);
+    }
 
-    /* --- Give the window a title. --- */
-    gtk_window_set_title (GTK_WINDOW (window), "Integral Calculator");
+    fclose (fptr);
+    system("python3 plotter.py");
 
-    /* --- Set the window size. --- */
-    gtk_widget_set_usize (window, 200, 200);
-
-    /* --- We care if a key is pressed --- */
-    gtk_signal_connect (GTK_OBJECT (window), "key_press_event",
-                        GTK_SIGNAL_FUNC (key_press), NULL);
-
-    /* --- You should always remember to connect the delete event
-     *     to the main window. --- */
-    gtk_signal_connect (GTK_OBJECT (window), "delete_event",
-                        GTK_SIGNAL_FUNC (CloseAppWindow), NULL);
-
-    /* --- Create a 5x5 table for the items in the calculator. --- */
-    table = gtk_table_new (5, 5, TRUE); 
-
-    /* --- Create the calculator buttons. --- */
-    CreateCalculatorButtons (table);
-
-    /* --- Create the calculator LED --- */
-    label = gtk_label_new ("0");
-    gtk_misc_set_alignment (GTK_MISC (label), 1, .5);
-
-    /* --- Add label to the table --- */
-    gtk_table_attach_defaults (GTK_TABLE (table), label, 
-                              0, 4, 0, 1);
-    gtk_widget_show (label);
-  
-    /* --- Make them visible --- */
-    gtk_container_add (GTK_CONTAINER (window), table);
-    gtk_widget_show (table);
-    gtk_widget_show (window);
-
-    /* --- Grab focus for the keystrokes --- */
-    //gtk_widget_grab_focus (buttonList[0].widget);
-
-    gtk_main ();
-    return (0);
 }
+void generate_graph_c(char* a, char* b, char* e) {
+    generate_graph(atof(a), atof(b), e);
+}
+
+/* Button press callback function.
+ * Starts the integrator (A blocking Function)
+*/
+static void run_integrator( GtkWidget *widget, gpointer   data ) {
+    gtk_label_set_text(result_w, "Loading");
+    
+    char *exp = gtk_entry_get_text (integral_w);
+
+    char *a1 = gtk_entry_get_text (a);
+    char *b1 = gtk_entry_get_text (b);
+
+    generate_graph_c(a1, b1, exp);
+
+    float res = integral_c(a1, b1, exp);
+
+    printf("integral of %s = %f\n", exp, res);
+
+    char res1[50];
+    dtoa(res1, res);
+
+    gtk_label_set_text(result_w, res1);
+    gtk_image_set_from_pixbuf(image, gdk_pixbuf_new_from_file("cache/output.png", NULL));
+}
+
+/* Callback to Kill the program*/
+static void destroy( GtkWidget *widget, gpointer   data ) {
+    gtk_main_quit ();
+}
+
+/**
+ * Kills the program (Runs on Close Button press)
+ */
+static gboolean delete_event( GtkWidget *widget, GdkEvent  *event, gpointer   data ) {
+    /* If you return FALSE in the "delete-event" signal handler,
+     * GTK will emit the "destroy" signal. Returning TRUE means
+     * you don't want the window to be destroyed.
+     * This is useful for popping up 'are you sure you want to quit?'
+     * type dialogs. */
+
+    g_print ("delete event occurred\n");
+
+    destroy(widget, data);
+    /* Change TRUE to FALSE and the main window will be destroyed with
+     * a "delete-event". */
+
+    return TRUE;
+}
+
+
+/**
+ * Defines the UI elements and starts the GUI main loop gtk_main ();
+ */
+int main( int   argc,char *argv[] ) {
+    /* GtkWidget is the storage type for widgets */
+
+    
+    /* This is called in all GTK applications. Arguments are parsed
+     * from the command line and are returned to the application. */
+    gtk_init (&argc, &argv);
+    
+    /* create a new window */
+    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    
+    /* When the window is given the "delete-event" signal (this is given
+     * by the window manager, usually by the "close" option, or on the
+     * titlebar), we ask it to call the delete_event () function
+     * as defined above. The data passed to the callback
+     * function is NULL and is ignored in the callback function. */
+    g_signal_connect (window, "delete-event",
+		      G_CALLBACK (delete_event), NULL);
+    
+    /* Here we connect the "destroy" event to a signal handler.  
+     * This event occurs when we call gtk_widget_destroy() on the window,
+     * or if we return FALSE in the "delete-event" callback. */
+    g_signal_connect (window, "destroy",
+		      G_CALLBACK (destroy), NULL);
+    
+    /* Sets the border width of the window. */
+    gtk_container_set_border_width (GTK_CONTAINER (window), 10);
+
+    /* We create a box to pack widgets into.  This is described in detail
+     * in the "packing" section. The box is not really visible, it
+     * is just used as a tool to arrange widgets. */
+    box1 = gtk_hbox_new (FALSE, 0);
+    table = gtk_table_new(5, 3, FALSE);
+    image = gtk_image_new_from_file ("cache/blank.png");
+
+    /* Put the box into the main window. */
+    gtk_container_add (GTK_CONTAINER (window), box1);
+
+    integral_w_l = gtk_label_new("Integral of ");
+    integral_w = gtk_entry_new();
+    a = gtk_entry_new();
+    b = gtk_entry_new();
+    running_from_l = gtk_label_new("Running from ");
+    a_l = gtk_label_new("a = ");
+    b_l = gtk_label_new("b = ");
+    result_l = gtk_label_new("Result = ");
+    result_w = gtk_label_new("0.0");
+
+    /* Creates a new button with the label "Hello World". */
+    button = gtk_button_new_with_label ("Integrate");
+    
+    /* When the button receives the "clicked" signal, it will call the
+     * function hello() passing it NULL as its argument.  The hello()
+     * function is defined above. */
+    g_signal_connect (button, "clicked",
+		      G_CALLBACK (run_integrator), NULL); 
+    
+
+    /* This packs the button into the window (a gtk container). */
+    gtk_table_attach_defaults(GTK_TABLE(table), integral_w_l, 0, 1, 0, 1);
+    gtk_table_attach_defaults(GTK_TABLE(table), integral_w, 1, 2, 0, 1);
+
+    gtk_table_attach_defaults(GTK_TABLE(table), image, 0, 2, 1, 2);
+
+    gtk_table_attach_defaults(GTK_TABLE(table), running_from_l, 0, 2, 2, 3);
+    gtk_table_attach_defaults(GTK_TABLE(table), a_l, 0, 1, 3, 4);
+    gtk_table_attach_defaults(GTK_TABLE(table), a, 1, 2, 3, 4);
+    gtk_table_attach_defaults(GTK_TABLE(table), b_l, 0, 1, 4, 5);
+    gtk_table_attach_defaults(GTK_TABLE(table), b, 1, 2, 4, 5);
+
+    gtk_table_attach_defaults(GTK_TABLE(table), result_l, 0, 1, 5, 6);
+    gtk_table_attach_defaults(GTK_TABLE(table), result_w, 1, 2, 5, 6);
+    gtk_table_attach_defaults(GTK_TABLE(table), button, 0, 1, 6, 7);
+
+    gtk_box_pack_start (GTK_BOX(box1), table, TRUE, TRUE, 0);
+
+    /*gtk_box_pack_start (GTK_BOX(box1), integral_w_l, FALSE, TRUE, 0);
+    gtk_box_pack_start (GTK_BOX(box1), integral_w, TRUE, TRUE, 0);
+    gtk_box_pack_start (GTK_BOX(box1), running_from_l, FALSE, TRUE, 0);
+    gtk_box_pack_start (GTK_BOX(box1), a_l, FALSE, TRUE, 0);
+    gtk_box_pack_start (GTK_BOX(box1), a, FALSE, TRUE, 0);
+    gtk_box_pack_start (GTK_BOX(box1), b_l, FALSE, TRUE, 0);
+    gtk_box_pack_start (GTK_BOX(box1), b, FALSE, TRUE, 0);
+    gtk_box_pack_start (GTK_BOX(box1), result_l, FALSE, TRUE, 0);
+    gtk_box_pack_start (GTK_BOX(box1), result, FALSE, TRUE, 0);
+
+    gtk_box_pack_start (GTK_BOX(box1), button, FALSE, TRUE, 0);*/
+    
+    /* The final step is to display this newly created widget. */
+    gtk_widget_show (button);
+    gtk_widget_show (image);
+    gtk_widget_show (integral_w_l);
+    gtk_widget_show (integral_w);
+    gtk_widget_show (running_from_l);
+    gtk_widget_show (a_l);
+    gtk_widget_show (a);
+    gtk_widget_show (b_l);
+    gtk_widget_show (b);
+    gtk_widget_show (result_l);
+    gtk_widget_show (result_w);
+    
+    gtk_widget_show (table);
+
+    gtk_widget_show (box1);
+    
+    /* and the window */
+    gtk_widget_show (window);
+    
+    /* All GTK applications must have a gtk_main(). Control ends here
+     * and waits for an event to occur (like a key press or
+     * mouse event). */
+    gtk_main ();
+    
+    return 0;
+}
+ 

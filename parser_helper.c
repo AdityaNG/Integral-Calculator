@@ -1,3 +1,6 @@
+/*
+ * Helper code that makes working with expr.h easier
+*/
 struct nop_context {
   void *p;
 };

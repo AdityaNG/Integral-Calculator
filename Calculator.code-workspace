@@ -6,7 +6,13 @@
 	],
 	"settings": {
 		"files.associations": {
-			"expr.h": "c"
+			"expr.h": "c",
+			"__locale": "c",
+			"integral.h": "c",
+			"math.h": "c",
+			"parser.h": "c",
+			"gtk.h": "c",
+			"stdlib.h": "c"
 		}
 	}
 }

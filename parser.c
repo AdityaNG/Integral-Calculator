@@ -4,18 +4,19 @@
 
 #include "parser_helper.c"
 
+
+/**
+ * Parses the given function of x at the point x=float(s1)
+ * Converts the string to format "x=val, f(x)"; Eg. "x=0.24,x**2 + 2*x + 2"
+ * */
 float parseAt(char *s1, float x) {
     char s[4096] = "x=";
     char num[25];
     ftoa(x, num, 9);
-    //printf("num : %s\n", num);
 
     strcat(s, num);
     strcat(s,",");
     strcat(s, s1);
-    //printf("Converting : %s\n", s);
-    //char *res = replaceAll(s, "x", num);
-    //printf("Converted : %s\n", res);
 
     struct expr_var_list vars = {0};
     struct expr *e = expr_create(s, strlen(s), &vars, user_funcs);
@@ -26,21 +27,13 @@ float parseAt(char *s1, float x) {
 
     float result = expr_eval(e);
 
-    char *p = (char *)malloc(strlen(s) + 1);
-    strncpy(p, s, strlen(s) + 1);
-    for (char *it = p; *it; it++) {
-        if (*it == '\n') {
-        *it = '\\';
-        }
-    }
-
-    //printf("Res %f\n", result);
     expr_destroy(e, &vars);
-    free(p);
     return result;
 }
 
-// Reverses a string 'str' of length 'len' 
+/**
+ * Reverses a string 'str' of length 'len' 
+ * */
 void reverse(char* str, int len) { 
     //printf("%s", str);
     int i = 0, j = len - 1, temp; 
@@ -53,10 +46,13 @@ void reverse(char* str, int len) {
     } 
 } 
 
-// Converts a given integer x to string str[].  
-// d is the number of digits required in the output.  
-// If d is more than the number of digits in x,  
-// then 0s are added at the beginning. 
+
+/**
+ * Converts a given integer x to string str[].  
+ * d is the number of digits required in the output.  
+ * If d is more than the number of digits in x,  
+ * then 0s are added at the beginning. 
+ * */
 int intToStr(int x, char *str, int d) {
     //printf("%s", str);
     if (x==0) {
@@ -80,9 +76,10 @@ int intToStr(int x, char *str, int d) {
     return i; 
 } 
 
-// Converts a floating-point/double number to a string. 
-void ftoa(float n, char* res, int afterpoint) 
-{ 
+/**
+ * Converts a floating-point/double number to a string. 
+ * */
+void ftoa(float n, char* res, int afterpoint) { 
     // Extract integer part 
     int ipart = (int)n; 
   
@@ -105,7 +102,9 @@ void ftoa(float n, char* res, int afterpoint)
     } 
 } 
   
-
+/**
+ * Replaces every instance of orig in str with rep
+ * */
 char *replaceAll(char *str, char *orig, char *rep) {
     static char buffer[4096];
     char *p;
