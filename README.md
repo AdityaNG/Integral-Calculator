@@ -1,4 +1,9 @@
 # Integral Calculator
+
+
+![alt text](https://raw.githubusercontent.com/AdityaNG/Integral-Calculator/master/images/1.png "Output")
+
+
 ## Description
 To write a program that is capable of :
 1. Interpreting an input string as a mathematical expression, following proper
@@ -39,5 +44,15 @@ For this project, we made extensive use of open source tools and code repositori
 We made use of GTK, an open source toolkit for creating GUIs, and its associated libraries (including borrowing from and improving on sample templates) for creating our project’s UI.
 
 We also made use of expr by zserge to evaluate the expressions. https://github.com/zserge/expr
+
+## Output
+
+![alt text](https://raw.githubusercontent.com/AdityaNG/Integral-Calculator/master/images/1.png "Output")
+
+![alt text](https://raw.githubusercontent.com/AdityaNG/Integral-Calculator/master/images/2.png "Output")
+
+![alt text](https://raw.githubusercontent.com/AdityaNG/Integral-Calculator/master/images/3.png "Output")
+
+![alt text](https://raw.githubusercontent.com/AdityaNG/Integral-Calculator/master/images/4.png "Output")
  
 The end result was an application which consisted of original code combined with code from different repositories, all put together to provide a seamless user experience.
